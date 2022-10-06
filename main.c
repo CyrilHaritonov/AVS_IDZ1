@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <sys/time.h>
 
 void inputLength(int *n) {
     printf("Enter the length of A: ");
@@ -83,19 +84,25 @@ void outputToFile(long *B, int n, FILE *file_name) {
 }
 
 int main(int argc, char *argv[]) {
+    struct timeval start, end;
     static struct option longOptions[] = {
             {"iofiles", required_argument, 0, 'f'},
-            {"help",    no_argument,       0, 'h'}
+            {"help",    no_argument,       0, 'h'},
+            {"random", required_argument, 0, 'r'}
     };
+
     int optionIndex = 0;
-    int arg = getopt_long(argc, argv, "hf:", longOptions, &optionIndex);
+    int arg = getopt_long(argc, argv, "hf:r:", longOptions, &optionIndex);
     switch (arg) {
         case 'h': {
-            printf("Keys: -h or --help to see list of keys and arguments,"
+            printf("Keys:\n -h or --help to see list of keys and arguments\n"
                    " -f or --iofiles <input file name>:<output file name>"
-                   " to take input file content as A (where first number is the length of A and following are content) and write B to output file."
-                   "Run without keys to take input from console or generate random A.\n");
-            return 0;
+                   " to take input file content as A (where first number is the length of A and following are content)"
+                   " and write B to output file\n -r or --random <length> to generate an array A of specified length with random content\n"
+                   "Run without keys to take A content from console standard input.\n");
+            gettimeofday(&start, NULL);
+            gettimeofday(&end, NULL);
+            break;
         }
         case 'f': {
             char *file_name = strtok(optarg, ":");
@@ -114,30 +121,47 @@ int main(int argc, char *argv[]) {
             fscanf(file_input, "%d", &n);
             long A[n];
             getInputFileContents(A, n, file_input);
+            gettimeofday(&start, NULL);
             int new_n;
             long min = formatFindMin(A, n, &new_n);
             long B[new_n];
             formatGetB(A, B, n, min);
+            gettimeofday(&end, NULL);
             outputToFile(B, new_n, file_output);
             fclose(file_input);
             fclose(file_output);
-            return 0;
+            break;
+        }
+        case 'r': {
+            int n = (int) strtol(strtok(optarg, " "), NULL, 10);
+            gettimeofday(&start, NULL);
+            long A[n];
+            generateA(A, n);
+            int new_n;
+            long min = formatFindMin(A, n, &new_n);
+            long B[new_n];
+            formatGetB(A, B, n, min);
+            gettimeofday(&end, NULL);
+            output(B, new_n);
+            break;
         }
         default: {
             int n;
             inputLength(&n);
             long A[n];
-            if (pickTypeOfInput()) {
-                inputA(A, n);
-            } else {
-                generateA(A, n);
-            }
+            inputA(A, n);
+            gettimeofday(&start, NULL);
             int new_n;
             long min = formatFindMin(A, n, &new_n);
             long B[new_n];
             formatGetB(A, B, n, min);
+            gettimeofday(&end, NULL);
             output(B, new_n);
-            return 0;
+            break;
         }
     }
+    double time_taken =  (double) (end.tv_sec - start.tv_sec) * 1e6;
+    time_taken = (time_taken + (double) (end.tv_usec - start.tv_usec)) * 1e-6;
+    printf("\nTime taken to execute this program: %f", time_taken);
+    return 0;
 }
