@@ -4,91 +4,28 @@
 #include <getopt.h>
 #include <sys/time.h>
 
-void inputLength(int *n) {
-    printf("Enter the length of A: ");
-    scanf("%d", n);
-    if (*n <= 0) {
-        printf("Unacceptable length value!");
-        exit(1);
-    }
-}
+extern void inputLength(int *n);
 
-void inputA(long *A, int n) {
-    printf("Now enter the elements of array A separated with spaces or new lines: ");
-    for (int i = 0; i < n; ++i) {
-        scanf("%ld", &A[i]);
-    }
-}
+extern void inputA(long *A, int n);
 
-long formatFindMin(const long *A, int n, int *new_n) {
-    long minimum = A[0];
-    int amount = 1;
-    for (int i = 1; i < n; ++i) {
-        if (minimum > A[i]) {
-            minimum = A[i];
-            amount = 1;
-        } else if (minimum == A[i]) {
-            amount++;
-        }
-    }
-    *new_n = n - amount;
-    return minimum;
-}
+extern long formatFindMin(const long *A, int n, int *new_n);
 
-void formatGetB(const long *A, long *B, int n, long minimum) {
-    int j = 0;
-    for (int i = 0; i < n; ++i) {
-        if (A[i] != minimum) {
-            B[j++] = A[i];
-        }
-    }
-}
+extern void formatGetB(const long *A, long *B, int n, long minimum);
 
-void output(long *B, int n) {
-    printf("This is array B: ");
-    for (int i = 0; i < n; ++i) {
-        printf("%ld ", B[i]);
-    }
-}
+extern void output(long *B, int n);
 
-void generateA(long *A, int n) {
-    printf("This is randomly generated A: ");
-    for (int i = 0; i < n; ++i) {
-        A[i] = rand();
-        printf("%ld ", A[i]);
-    }
-    printf("\n");
-}
+extern void generateA(long *A, int n);
 
-int pickTypeOfInput() {
-    printf("Enter 1 to manually input A, enter 0 to generate A randomly: ");
-    int choice;
-    scanf("%d", &choice);
-    if (choice != 1 && choice != 0) {
-        printf("Wrong value of choice!");
-        exit(1);
-    }
-    return choice;
-}
+extern void getInputFileContents(long *A, int n, FILE *file_name);
 
-void getInputFileContents(long *A, int n, FILE *file_name) {
-    for (int i = 0; i < n; ++i) {
-        fscanf(file_name, "%ld", &A[i]);
-    }
-}
-
-void outputToFile(long *B, int n, FILE *file_name) {
-    for (int i = 0; i < n; ++i) {
-        fprintf(file_name, "%ld ", B[i]);
-    }
-}
+extern void outputToFile(long *B, int n, FILE *file_name);
 
 int main(int argc, char *argv[]) {
     struct timeval start, end;
     static struct option longOptions[] = {
             {"iofiles", required_argument, 0, 'f'},
             {"help",    no_argument,       0, 'h'},
-            {"random", required_argument, 0, 'r'}
+            {"random",  required_argument, 0, 'r'}
     };
 
     int optionIndex = 0;
@@ -160,7 +97,7 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-    double time_taken =  (double) (end.tv_sec - start.tv_sec) * 1e6;
+    double time_taken = (double) (end.tv_sec - start.tv_sec) * 1e6;
     time_taken = (time_taken + (double) (end.tv_usec - start.tv_usec)) * 1e-6;
     printf("\nTime taken to execute this program: %f", time_taken);
     return 0;
