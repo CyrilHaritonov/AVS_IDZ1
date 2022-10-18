@@ -53,22 +53,19 @@ inputA:# объявляем void inputA(long *A, int n)
 	lea	rdi, .LC3[rip]# берем указатель на строку
 	mov	eax, 0
 	call	printf@PLT# вызываем printf
-	mov	DWORD PTR -4[rbp], 0# [rbp-4] = 0 (это int i)
+	mov	r12, 0# r12 = 0 (это int i)
 	jmp	.L5# прыгаем к сравнению
 .L6:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
-	cdqe
-	lea	rdx, 0[0+rax*8]# rdx = offset текущего элемента относительно начала A
+	lea	rdx, 0[0+r12*8]# rdx = offset текущего элемента относительно начала A
 	mov	rax, QWORD PTR -24[rbp]# rax = A
 	add	rax, rdx# rax = &A[i]
 	mov rsi, rax
 	lea	rdi, .LC4[rip]# rdi = адрес строки для scanf
 	mov	eax, 0
 	call	__isoc99_scanf@PLT# вызываем scanf
-	add	DWORD PTR -4[rbp], 1# ++i
+	add	r12, 1# ++i
 .L5:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
-	cmp	eax, DWORD PTR -28[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -28[rbp]# сравниваем i и n
 	jl	.L6# если i < n то прыгаем в тело цикла
 	leave# эпилог
 	ret
@@ -83,50 +80,43 @@ formatFindMin:# объявляем long formatFindMin(const long *A, int n, int 
 	mov	QWORD PTR -40[rbp], rdx# [rbp-40] = new_n
 	mov	rax, QWORD PTR -24[rbp]# rax = A
 	mov	rax, QWORD PTR [rax]# rax = *A
-	mov	QWORD PTR -8[rbp], rax# [rbp - 8] = A[0]
-	mov	DWORD PTR -12[rbp], 1# amount = 1
-	mov	DWORD PTR -16[rbp], 1# i = 1
+	mov	r13, rax # minimum = A[0]
+	mov	r14, 1# amount = 1
+	mov	r12, 1# i = 1
 	jmp	.L8# к сравнению
 .L11:# тело цикла for
-	mov	eax, DWORD PTR -16[rbp]# eax = i
-	cdqe
-	lea	rdx, 0[0+rax*8]# offset текущего элемента A
+	lea	rdx, 0[0+r12*8]# offset текущего элемента A
 	mov	rax, QWORD PTR -24[rbp]# rax =  A
 	add	rax, rdx
 	mov	rax, QWORD PTR [rax]# rax = *A
-	cmp	QWORD PTR -8[rbp], rax# сравниваем minimum и A[i]
+	cmp	r13, rax# сравниваем minimum и A[i]
 	jle	.L9# если minimum <= A[i] то прыгаем
-	mov	eax, DWORD PTR -16[rbp]# eax = i
-	cdqe
-	lea	rdx, 0[0+rax*8]# offset для текущего элемента A
+	lea	rdx, 0[0+r12*8]# offset для текущего элемента A
 	mov	rax, QWORD PTR -24[rbp]# rax = A
 	add	rax, rdx
 	mov	rax, QWORD PTR [rax]# rax = *A
-	mov	QWORD PTR -8[rbp], rax# minimum = A[i]
-	mov	DWORD PTR -12[rbp], 1# amount = 1
+	mov	r13, rax# minimum = A[i]
+	mov	r14, 1# amount = 1
 	jmp	.L10
 .L9:
-	mov	eax, DWORD PTR -16[rbp]# eax = i
-	cdqe
-	lea	rdx, 0[0+rax*8]# offset для текущего элемента A
+	lea	rdx, 0[0+r12*8]# offset для текущего элемента A
 	mov	rax, QWORD PTR -24[rbp]# rax = A
 	add	rax, rdx
 	mov	rax, QWORD PTR [rax]# rax = *A
-	cmp	QWORD PTR -8[rbp], rax# сравниваем minimum и A[i]
+	cmp	r13, rax# сравниваем minimum и A[i]
 	jne	.L10
-	add	DWORD PTR -12[rbp], 1# amount++
+	add	r14, 1# amount++
 .L10:
-	add	DWORD PTR -16[rbp], 1# ++i
+	add	r12, 1# ++i
 .L8:
-	mov	eax, DWORD PTR -16[rbp]# eax = i
-	cmp	eax, DWORD PTR -28[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -28[rbp]# сравниваем i и n
 	jl	.L11# если i < n прыгаем в тело цикла
 	mov	eax, DWORD PTR -28[rbp]# eax = n
-	sub	eax, DWORD PTR -12[rbp]# eax -= amount
+	sub	eax, r14d# eax -= amount
 	mov	edx, eax
 	mov	rax, QWORD PTR -40[rbp]# rax = new_n
 	mov	DWORD PTR [rax], edx# *new_n = edx
-	mov	rax, QWORD PTR -8[rbp]# rax = minimum
+	mov	rax, r13# rax = minimum
 	pop	rbp# эпилог
 	ret
 	.size	formatFindMin, .-formatFindMin
@@ -139,26 +129,22 @@ formatGetB:# объявляем void formatGetB(const long *A, long *B, int n, l
 	mov	QWORD PTR -32[rbp], rsi# [rbp - 32] = B
 	mov	DWORD PTR -36[rbp], edx# [rbp - 36] = n
 	mov	QWORD PTR -48[rbp], rcx# [rbp - 48] = minimum
-	mov	DWORD PTR -4[rbp], 0# j = 0
-	mov	DWORD PTR -8[rbp], 0# i = 0
+	mov	r13, 0# j = 0
+	mov	r12, 0# i = 0
 	jmp	.L14# прыгаем к сравнению
 .L16:
-	mov	eax, DWORD PTR -8[rbp]# eax = i
-	cdqe
-	lea	rdx, 0[0+rax*8]# offset для текущего элемента A
+	lea	rdx, 0[0+r12*8]# offset для текущего элемента A
 	mov	rax, QWORD PTR -24[rbp]# rax = A
 	add	rax, rdx# rax = &A[i]
 	mov	rax, QWORD PTR [rax]# rax = A[i]
 	cmp	QWORD PTR -48[rbp], rax# сравниваем minimum и A[i]
 	je	.L15# если равны то прыгаем
-	mov	eax, DWORD PTR -8[rbp]# eax = i
-	cdqe
-	lea	rdx, 0[0+rax*8]# offset для текущего элемента A
+	lea	rdx, 0[0+r12*8]# offset для текущего элемента A
 	mov	rax, QWORD PTR -24[rbp]# rax = A
 	lea	rcx, [rdx+rax]# rcx = &A[i]
-	mov	eax, DWORD PTR -4[rbp]# eax = j
+	mov	eax, r13d# eax = j
 	lea	edx, 1[rax]# edx = j + 1
-	mov	DWORD PTR -4[rbp], edx# j = j + 1
+	movsx	r13d, edx# j = j + 1
 	cdqe
 	lea	rdx, 0[0+rax*8]# offset для текущего элемента B
 	mov	rax, QWORD PTR -32[rbp]# rax = B
@@ -166,10 +152,9 @@ formatGetB:# объявляем void formatGetB(const long *A, long *B, int n, l
 	mov	rax, QWORD PTR [rcx]# rax = A[i]
 	mov	QWORD PTR [rdx], rax# B[j + 1] = A[i]
 .L15:
-	add	DWORD PTR -8[rbp], 1# ++i
+	add	r12, 1# ++i
 .L14:
-	mov	eax, DWORD PTR -8[rbp]# eax = i
-	cmp	eax, DWORD PTR -36[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -36[rbp]# сравниваем i и n
 	jl	.L16# если i < n то прыгаем в тело цикла
 	pop	rbp# эпилог
 	ret
@@ -191,10 +176,10 @@ output:# объявляем void output(long *B, int n)
 	lea	rdi, .LC5[rip]# rdi = указатель на строку
 	mov	eax, 0
 	call	printf@PLT# вызываем printf
-	mov	DWORD PTR -4[rbp], 0# i = 0
+	mov	r12, 0# i = 0
 	jmp	.L18# прыгаем к условию цикла
 .L19:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
+	mov	eax, r12d# eax = i
 	cdqe
 	lea	rdx, 0[0+rax*8]# offset для текущего элемента B
 	mov	rax, QWORD PTR -24[rbp]# rax = B
@@ -203,10 +188,9 @@ output:# объявляем void output(long *B, int n)
 	lea	rdi, .LC6[rip]# rdi = указатель на строку
 	mov	eax, 0
 	call	printf@PLT# вызываем printf
-	add	DWORD PTR -4[rbp], 1# ++i
+	add	r12, 1# ++i
 .L18:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
-	cmp	eax, DWORD PTR -28[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -28[rbp]# сравниваем i и n
 	jl	.L19# если i < n то прыгаем
 	leave# эпилог
 	ret
@@ -227,18 +211,18 @@ generateA:# объявляем void generateA(long *A, int n)
 	lea	rdi, .LC7[rip]# rdi = указатель на строку
 	mov	eax, 0
 	call	printf@PLT# вызываем printf
-	mov	DWORD PTR -4[rbp], 0# i = 0
+	mov	r12, 0# i = 0
 	jmp	.L21# прыгаем к сравнению
 .L22:
 	call	rand@PLT# вызываем rand
-	mov	edx, DWORD PTR -4[rbp]# edx = i
+	mov	edx, r12d# edx = i
 	movsx	rdx, edx
 	lea	rcx, 0[0+rdx*8]# offset для текущего A[i]
 	mov	rdx, QWORD PTR -24[rbp]# rdx = A
 	add	rdx, rcx# rdx = &A[i]
 	cdqe
 	mov	QWORD PTR [rdx], rax# A[i] = rand()
-	mov	eax, DWORD PTR -4[rbp]# eax = i
+	mov	eax, r12d# eax = i
 	cdqe
 	lea	rdx, 0[0+rax*8]# offset для текущего A[i]
 	mov	rax, QWORD PTR -24[rbp]# rax = A
@@ -247,10 +231,9 @@ generateA:# объявляем void generateA(long *A, int n)
 	lea	rdi, .LC6[rip]# rdi = указатель на строку
 	mov	eax, 0
 	call	printf@PLT# вызываем printf
-	add	DWORD PTR -4[rbp], 1# ++i
+	add	r12, 1# ++i
 .L21:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
-	cmp	eax, DWORD PTR -28[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -28[rbp]# сравниваем i и n
 	jl	.L22# если i < n то прыгаем
 	mov	edi, 10# edi = '\n'
 	call	putchar@PLT# вызываем putchar
@@ -273,14 +256,14 @@ pickTypeOfInput:# объявление int pickTypeOfInput()
 	lea	rdi, .LC8[rip]# rdi = указатель на строку
 	mov	eax, 0
 	call	printf@PLT# вызов printf
-	lea	rsi, -4[rbp]# rsi = &choice
+	lea	rsi, [r12]# rsi = &choice
 	lea	rdi, .LC1[rip]# rax = указатель на строку
 	mov	eax, 0
 	call	__isoc99_scanf@PLT# вызываем scanf
-	mov	eax, DWORD PTR -4[rbp]# eax = choice
+	mov	eax, r12d# eax = choice
 	cmp	eax, 1# сравниваем choice и 1
 	je	.L24# если choice == 1, то прыгаем
-	mov	eax, DWORD PTR -4[rbp]#  eax = choice
+	mov	eax, r12d#  eax = choice
 	test	eax, eax# проверяем равно ли choice нулю
 	je	.L24# если да то прыгаем
 	lea	rdi, .LC9[rip]# rdi = указатель на строку
@@ -289,7 +272,7 @@ pickTypeOfInput:# объявление int pickTypeOfInput()
 	mov	edi, 1# edi = 1
 	call	exit@PLT# вызываем exit
 .L24:
-	mov	eax, DWORD PTR -4[rbp]# eax = choice
+	mov	eax, r12d# eax = choice
 	leave# эпилог
 	ret
 	.size	pickTypeOfInput, .-pickTypeOfInput
@@ -302,10 +285,10 @@ getInputFileContents:# объявляем void getInputFileContents(long *A, int
 	mov	QWORD PTR -24[rbp], rdi# [rbp - 24] = A
 	mov	DWORD PTR -28[rbp], esi# [rbp - 28] = n
 	mov	QWORD PTR -40[rbp], rdx# [rbp - 40] = file_name
-	mov	DWORD PTR -4[rbp], 0# i = 0
+	mov	r12, 0# i = 0
 	jmp	.L27# прыгаем к сравнению
 .L28:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
+	mov	eax, r12d# eax = i
 	cdqe
 	lea	rdx, 0[0+rax*8]# offset для текущего A[i]
 	mov	rax, QWORD PTR -24[rbp]# rax = A
@@ -314,10 +297,9 @@ getInputFileContents:# объявляем void getInputFileContents(long *A, int
 	lea	rsi, .LC4[rip]# rsi = указатель на строку
 	mov	eax, 0
 	call	__isoc99_fscanf@PLT# вызываем scanf
-	add	DWORD PTR -4[rbp], 1# i + 1
+	add r12, 1# i + 1
 .L27:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
-	cmp	eax, DWORD PTR -28[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -28[rbp]# сравниваем i и n
 	jl	.L28# если i < n то прыгаем
 	leave# эпилог
 	ret
@@ -331,10 +313,10 @@ outputToFile:# void outputToFile(long *B, int n, FILE *file_name)
 	mov	QWORD PTR -24[rbp], rdi# [rbp - 24] = B
 	mov	DWORD PTR -28[rbp], esi# [rbp - 28] = n
 	mov	QWORD PTR -40[rbp], rdx# [rbp - 40] = file_name
-	mov	DWORD PTR -4[rbp], 0# i = 0
+	mov	r12, 0# i = 0
 	jmp	.L30# прыгаем к сравнению
 .L31:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
+	mov	eax, r12d# eax = i
 	cdqe
 	lea	rdx, 0[0+rax*8]# offset для текущего B[i]
 	mov	rax, QWORD PTR -24[rbp]# rax = B
@@ -344,10 +326,9 @@ outputToFile:# void outputToFile(long *B, int n, FILE *file_name)
 	lea	rsi, .LC6[rip]# rsi = указатель на строку
 	mov	eax, 0
 	call	fprintf@PLT# вызываем fprintf
-	add	DWORD PTR -4[rbp], 1# ++i
+	add	r12, 1# ++i
 .L30:
-	mov	eax, DWORD PTR -4[rbp]# eax = i
-	cmp	eax, DWORD PTR -28[rbp]# сравниваем i и n
+	cmp	r12d, DWORD PTR -28[rbp]# сравниваем i и n
 	jl	.L31# если i < n то прыгаем
 	leave
 	ret

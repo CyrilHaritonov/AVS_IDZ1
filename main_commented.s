@@ -224,7 +224,6 @@ main:# объявляем функцию int main(int argc, char *argv[])
 	call	fclose@PLT # вызвыаем fclose
 	mov	rdi, QWORD PTR -120[rbp] # rdi = file_output
 	call	fclose@PLT # вызываем flose
-	nop
 	mov	rsp, rbx # восстанавливаем rsp
 	jmp	.L5 # break из switch
 .L2:
@@ -353,7 +352,6 @@ main:# объявляем функцию int main(int argc, char *argv[])
 	mov	esi, DWORD PTR -256[rbp] # esi = new_n
 	mov	rdi, QWORD PTR -96[rbp] # rdi = B
 	call	output@PLT #  вызываем output
-	nop
 	mov	rsp, rbx # возращаем esp к исходному
 	jmp	.L5 # break из switch
 .L3:
@@ -476,7 +474,6 @@ main:# объявляем функцию int main(int argc, char *argv[])
 	mov	esi, DWORD PTR -264[rbp] # esi = new_n
 	mov	rdi, QWORD PTR -200[rbp] # rdi = B
 	call	output@PLT # вызываем output
-	nop
 	mov	rsp, rbx # восстанавливаем rsp
 .L5:
 	mov	rax, QWORD PTR -240[rbp] # rax = end.tv_sec
